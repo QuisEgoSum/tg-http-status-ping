@@ -50,10 +50,7 @@ export class TaskService extends Service {
 
   async getChatStatus(chatId: number): Promise<{message: string, keyboards: {text: string, callback_data: string}[][]}> {
     const tasks = await this.repository.findActiveChat(chatId)
-    if (!tasks.length) {
-      return {message: 'У вас нет активных задач', keyboards: []}
-    }
-    let message = ''
+    let message = tasks.length ? '' : 'У вас нет активных задач'
     const keyboards: {text: string, callback_data: string}[][] = []
     let row = 0
     let rowTasks = 0
@@ -72,6 +69,11 @@ export class TaskService extends Service {
         keyboards[row] = []
       }
       keyboards[row].push({text: 'Отменить ' + task.number, callback_data: JSON.stringify(['stop', task.number])})
+    }
+
+    if (chatId == config.telegram.adminChatId) {
+      const total = await this.repository.countActiveTasks()
+      message += '\nВсего активных задач: ' + total
     }
 
     return {message, keyboards}

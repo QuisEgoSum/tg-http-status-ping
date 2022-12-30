@@ -50,5 +50,9 @@ export class TaskRepository {
       {new: false}
     ).lean().exec()
   }
+
+  async countActiveTasks() {
+    return await this.Model.countDocuments({active: true}).exec()
+  }
 }
 
