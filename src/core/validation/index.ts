@@ -2,7 +2,7 @@ import Ajv from 'ajv'
 import ajvErrors from 'ajv-errors'
 import ajvKeywords from 'ajv-keywords'
 import cron from 'node-cron'
-import {ErrorObject, ValidateFunction} from 'ajv/lib/types'
+import {ErrorObject, ValidateFunction} from 'ajv'
 import {ApplicationError} from '@error'
 
 export const ajv = new Ajv(
