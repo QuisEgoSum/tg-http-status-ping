@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": "src",
+    "paths": {
+      "@common/*": ["common/*"],
+      "@core/*": ["core/*"],
+      "@app/*": ["app/*"],
+      "@utils/*": ["utils/*"],
+      "@libs/*": ["libs/*"],
+      "@config": ["core/config"],
+      "@logger": ["core/logger"],
+      "@error": ["core/error"],
+      "@server/*": ["server/*"]
+    }
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "build", "tools"]
+}

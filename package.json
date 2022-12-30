@@ -1,0 +1,86 @@
+{
+  "name": "tg-http-status-ping",
+  "version": "0.1.0",
+  "description": "",
+  "main": "build/main.js",
+  "scripts": {
+    "build": "tsc",
+    "removeBuild": "find ./src -name \"*.js\" -type f -delete && find ./test -name \"*.js\" -not -name \"jest-environment-fail-fast.js\" -type f -delete",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "eslint . --ext .ts",
+    "prepublishOnly": "npm run build",
+    "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' src/main.ts",
+    "checkConfig": "npm run build && node -r module-alias/register tools/pre-commit/config.js && npm run removeBuild",
+    "start": "npm run build && node src/main.js",
+    "test": "jest main.ts"
+  },
+  "author": "QuisEgoSum",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "8.8.2",
+    "ajv-errors": "3.0.0",
+    "ajv-keywords": "5.1.0",
+    "axios": "^1.2.2",
+    "module-alias": "2.2.2",
+    "mongodb": "4.2.1",
+    "mongoose": "6.1.0",
+    "node-cron": "^3.0.2",
+    "pino": "7.5.1",
+    "telegraf": "4.7.0",
+    "yaml": "1.10.2"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^3.2.0",
+    "@types/bcrypt": "^5.0.0",
+    "@types/jest": "^27.4.1",
+    "@types/json2md": "^1.5.1",
+    "@types/node-cron": "^3.0.7",
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "@typescript-eslint/typescript-estree": "^5.6.0",
+    "eslint": "^8.13.0",
+    "eslint-plugin-jest": "^26.1.3",
+    "jest": "^27.5.1",
+    "jest-environment-node": "^27.5.1",
+    "json2md": "^1.12.0",
+    "markdown-table-prettify": "^3.6.0",
+    "nodemon": "^2.0.15",
+    "pino-pretty": "^7.3.0",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.4.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^4.5.2"
+  },
+  "_moduleAliases": {
+    "@common": "src/common",
+    "@core": "src/core",
+    "@app": "src/app",
+    "@utils": "src/utils",
+    "@libs": "src/libs",
+    "@logger": "src/core/logger",
+    "@config": "src/core/config",
+    "@error": "src/core/error",
+    "@server": "src/server"
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/test/**"
+    ],
+    "verbose": true,
+    "testRunner": "jest-circus/runner",
+    "testEnvironment": "./test/jest-environment-fail-fast.js",
+    "moduleNameMapper": {
+      "^@common(.*)$": "<rootDir>/src/common$1",
+      "^@core(.*)$": "<rootDir>/src/core$1",
+      "^@app(.*)$": "<rootDir>/src/app$1",
+      "^@utils(.*)$": "<rootDir>/src/utils$1",
+      "^@libs(.*)$": "<rootDir>/src/libs$1",
+      "^@server(.*)$": "<rootDir>/src/server$1",
+      "^@logger(.*)$": "<rootDir>/src/core/logger$1",
+      "^@config(.*)$": "<rootDir>/src/core/config$1",
+      "^@error(.*)$": "<rootDir>/src/core/error$1"
+    },
+    "preset": "ts-jest"
+  }
+}

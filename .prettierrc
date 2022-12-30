@@ -1,0 +1,9 @@
+{
+  "printWidth": 120,
+  "trailingComma": "none",
+  "singleQuote": true,
+  "semi": false,
+  "arrowParens": "avoid",
+  "bracketSpacing": false,
+  "parser": "@typescript-eslint/typescript-estree"
+}

@@ -1,0 +1,27 @@
+production: false
+
+database:
+  credentials:
+    connectionString: mongodb://localhost/tg-http-status-ping
+  options:
+    useNewUrlParser: true
+    useUnifiedTopology: true
+    ignoreUndefined: false
+    keepAlive: true
+
+telegram:
+  token: 0000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  enableWebhook: false
+  webhook:
+    port: 9000
+    hookPath: /api/telegram
+    domain: localhost:9000
+  adminChatId: 0
+
+logger:
+  # Recommended false for production
+  pretty: true
+  time: true
+  # Recommended false for production
+  isoTime: true
+  level: debug # debug | info

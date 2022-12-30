@@ -1,0 +1,125 @@
+{
+  "type": "object",
+  "properties": {
+    "production": {
+      "type": "boolean"
+    },
+    "telegram": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "enableWebhook": {
+          "type": "boolean"
+        },
+        "adminChatId": {
+          "type": "integer"
+        },
+        "webhook": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65353
+            },
+            "hookPath": {
+              "type": "string"
+            },
+            "domain": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "port",
+            "hookPath",
+            "domain"
+          ]
+        }
+      },
+      "required": [
+        "token",
+        "enableWebhook",
+        "adminChatId",
+        "webhook"
+      ],
+      "additionalProperties": false
+    },
+    "logger": {
+      "type": "object",
+      "properties": {
+        "pretty": {
+          "type": "boolean"
+        },
+        "isoTime": {
+          "type": "boolean"
+        },
+        "time": {
+          "type": "boolean"
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "info",
+            "debug"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "pretty",
+        "isoTime",
+        "time",
+        "level"
+      ]
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "credentials": {
+          "type": "object",
+          "properties": {
+            "connectionString": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "connectionString"
+          ]
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "useNewUrlParser": {
+              "type": "boolean"
+            },
+            "useUnifiedTopology": {
+              "type": "boolean"
+            },
+            "ignoreUndefined": {
+              "type": "boolean"
+            },
+            "keepAlive": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "credentials",
+        "options"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "production",
+    "telegram",
+    "logger",
+    "database"
+  ]
+}
