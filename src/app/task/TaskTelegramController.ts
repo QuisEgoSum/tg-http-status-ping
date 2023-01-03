@@ -38,7 +38,7 @@ export class TaskTelegramController extends TelegramController {
       cron: cron.join(' '),
       chatId: ctx.update.message.chat.id
     })
-    await ctx.reply(`Задача запланирована. Номер задачи ${task.number}`)
+    await ctx.reply(`Задача запланирована №${task.number}`)
   }
 
   async status(ctx: Context): Promise<void> {
@@ -60,13 +60,14 @@ export class TaskTelegramController extends TelegramController {
     try {
       const chatId = (ctx.update as Record<any, any>).callback_query.message.chat.id
       await this.service.stop(chatId, number)
-      await ctx.answerCbQuery(`Задача ${number} удалена`)
+      await ctx.reply(`Задача ${number} удалена`)
     } catch (error) {
       if (error instanceof ApplicationError) {
-        await ctx.answerCbQuery(error.message)
+        await ctx.reply(error.message)
       } else {
         throw error
       }
     }
+    await ctx.answerCbQuery()
   }
 }

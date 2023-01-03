@@ -31,6 +31,19 @@ export class TaskService extends Service {
     await this.telegram.sendMessage(config.telegram.adminChatId, `Запущено задач при старте ${tasks.length}`)
   }
 
+  async _notifyAdmin(message: string) {
+    try {
+      const total = await this.repository.countActiveTasks()
+      message += '\nВсего активных задач: ' + total
+      await this.telegram.sendMessage(
+        config.telegram.adminChatId,
+        message
+      )
+    } catch (error) {
+      this.logger.error(error)
+    }
+  }
+
   async schedule(task: ScheduleTask) {
     const total = await this.repository.countActiveChatTasks(task.chatId)
     if (total >= 10) {
@@ -45,6 +58,7 @@ export class TaskService extends Service {
       task.status
     )
     this.scheduler.schedule(savedTask)
+    this._notifyAdmin(`Запланирована задача №${savedTask.number}`).then(() => undefined)
     return savedTask
   }
 
@@ -68,7 +82,7 @@ export class TaskService extends Service {
       if (!keyboards[row]) {
         keyboards[row] = []
       }
-      keyboards[row].push({text: 'Отменить ' + task.number, callback_data: JSON.stringify(['stop', task.number])})
+      keyboards[row].push({text: 'Отменить №' + task.number, callback_data: JSON.stringify(['stop', task.number])})
     }
 
     if (chatId == config.telegram.adminChatId) {
@@ -88,5 +102,6 @@ export class TaskService extends Service {
     if (!task.active) {
       throw new ApplicationError('Задача уже была удалена')
     }
+    this._notifyAdmin(`Остановлена задача №${number}`).then(() => undefined)
   }
 }
