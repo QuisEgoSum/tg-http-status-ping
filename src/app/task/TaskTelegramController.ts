@@ -19,6 +19,10 @@ export class TaskTelegramController extends TelegramController {
       event: 'stop',
       handler: this.stop.bind(this)
     })
+    this.telegram.registerCallbackHandler<[number]>({
+      event: 'restart',
+      handler: this.restart.bind(this)
+    })
   }
 
   private async _getReplyMessageText(ctx: Context, replyMessage: string): Promise<string | null> {
@@ -69,10 +73,51 @@ export class TaskTelegramController extends TelegramController {
     )
   }
 
+  async restart(ctx: Context, number: number): Promise<void> {
+    try {
+      const chatId = (ctx.update as Record<any, any>).callback_query.message.chat.id
+      const inlineKeyboard = await this.service.restart(
+        chatId,
+        number,
+        // @ts-ignore
+        ctx.update.callback_query.message.reply_markup.inline_keyboard
+      )
+      await this.telegram.bot.telegram.editMessageReplyMarkup(
+        // @ts-ignore
+        ctx.update.callback_query.from.id,
+        // @ts-ignore
+        ctx.update.callback_query.message.message_id,
+        undefined,
+        {inline_keyboard: inlineKeyboard}
+      )
+      await ctx.reply(`Задача ${number} восстановлена`)
+    } catch (error) {
+      if (error instanceof ApplicationError) {
+        await ctx.reply(error.message)
+      } else {
+        throw error
+      }
+    }
+    await ctx.answerCbQuery()
+  }
+
   async stop(ctx: Context, number: number): Promise<void> {
     try {
       const chatId = (ctx.update as Record<any, any>).callback_query.message.chat.id
-      await this.service.stop(chatId, number)
+      const inlineKeyboard = await this.service.stop(
+        chatId,
+        number,
+        // @ts-ignore
+        ctx.update.callback_query.message.reply_markup.inline_keyboard
+      )
+      await this.telegram.bot.telegram.editMessageReplyMarkup(
+        // @ts-ignore
+        ctx.update.callback_query.from.id,
+        // @ts-ignore
+        ctx.update.callback_query.message.message_id,
+        undefined,
+        {inline_keyboard: inlineKeyboard}
+      )
       await ctx.reply(`Задача ${number} удалена`)
     } catch (error) {
       if (error instanceof ApplicationError) {

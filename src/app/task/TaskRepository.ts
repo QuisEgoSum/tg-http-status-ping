@@ -78,5 +78,13 @@ export class TaskRepository {
   async setMessageExecuteInfo(number: number, executeAt: number) {
     return this.Model.updateOne({number}, {executeAt})
   }
+
+  async enable(chatId: number, number: number) {
+    return await this.Model.findOneAndUpdate(
+      {chatId, number},
+      {active: true},
+      {new: false}
+    ).lean().exec()
+  }
 }
 

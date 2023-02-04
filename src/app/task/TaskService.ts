@@ -78,7 +78,7 @@ export class TaskService extends Service {
 
   private messageTaskStringFormatter(task: IMessageTask): string {
     let message = ''
-    message += `Сообщение: \n\`${task.message}\``
+    message += `Сообщение: \n\`${task.message}\`\n`
     message += `Последнее выполнение: ${task.executeAt ? new Date(task.executeAt).toUTCString() : '-'}\n\n`
     return message
   }
@@ -116,7 +116,33 @@ export class TaskService extends Service {
     return {message, keyboards}
   }
 
-  async stop(chatId: number, number: number) {
+  private reverseKeyboard(inlineKeyboard: {text: string, callback_data: string}[][], number: number) {
+    for (const keyboardRow of inlineKeyboard) {
+      for (const keyboard of keyboardRow) {
+        if (keyboard.callback_data.includes(String(number))) {
+
+          let action = ''
+          if (keyboard.text == 'Отменить задачу') {
+            keyboard.text = 'Восстановить задачу'
+            action = 'restart'
+          } else if (keyboard.text == 'Восстановить задачу') {
+            keyboard.text = 'Отменить задачу'
+            action = 'stop'
+          } else if (keyboard.text.startsWith('Отменить')) {
+            keyboard.text = `Восстановить №${number}`
+            action = 'restart'
+          } else if (keyboard.text.startsWith('Восстановить ')) {
+            keyboard.text = `Отменить №${number}`
+            action = 'stop'
+          }
+          keyboard.callback_data = JSON.stringify([action, number])
+          break
+        }
+      }
+    }
+  }
+
+  async stop(chatId: number, number: number, inlineKeyboard: {text: string, callback_data: string}[][]) {
     const task = await this.repository.disable(chatId, number)
     if (!task) {
       throw new ApplicationError('Задача не найдена')
@@ -126,6 +152,8 @@ export class TaskService extends Service {
       throw new ApplicationError('Задача уже была удалена')
     }
     this._notifyAdmin(`Остановлена задача №${number}`).then(() => undefined)
+    this.reverseKeyboard(inlineKeyboard, number)
+    return inlineKeyboard
   }
 
   async scheduleMessage(task: ScheduleMessageTask): Promise<IMessageTask> {
@@ -140,5 +168,20 @@ export class TaskService extends Service {
     this.scheduler.schedule(savedTask)
     this._notifyAdmin(`Запланирована задача №${savedTask.number}`).then(() => undefined)
     return savedTask
+  }
+
+  async restart(chatId: any, number: number, inlineKeyboard: {text: string, callback_data: string}[][]) {
+    const task = await this.repository.enable(chatId, number)
+    if (!task) {
+      throw new ApplicationError('Задача не найдена')
+    }
+    if (task.active) {
+      throw new ApplicationError('Задача уже была активна')
+    }
+    task.active = true
+    await this.scheduler.schedule(task)
+    this._notifyAdmin(`Запущена №${number}`).then(() => undefined)
+    this.reverseKeyboard(inlineKeyboard, number)
+    return inlineKeyboard
   }
 }
