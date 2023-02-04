@@ -145,11 +145,11 @@ export class TaskService extends Service {
   async stop(chatId: number, number: number, inlineKeyboard: {text: string, callback_data: string}[][]) {
     const task = await this.repository.disable(chatId, number)
     if (!task) {
-      throw new ApplicationError('Задача не найдена')
+      throw new ApplicationError(`Задача ${number} не найдена`)
     }
     await this.scheduler.stop(number)
     if (!task.active) {
-      throw new ApplicationError('Задача уже была удалена')
+      throw new ApplicationError(`Задача ${number} уже была удалена`)
     }
     this._notifyAdmin(`Остановлена задача №${number}`).then(() => undefined)
     this.reverseKeyboard(inlineKeyboard, number)
@@ -173,10 +173,10 @@ export class TaskService extends Service {
   async restart(chatId: any, number: number, inlineKeyboard: {text: string, callback_data: string}[][]) {
     const task = await this.repository.enable(chatId, number)
     if (!task) {
-      throw new ApplicationError('Задача не найдена')
+      throw new ApplicationError(`Задача ${number} не найдена`)
     }
     if (task.active) {
-      throw new ApplicationError('Задача уже была активна')
+      throw new ApplicationError(`Задача ${number} уже была активна`)
     }
     task.active = true
     await this.scheduler.schedule(task)
