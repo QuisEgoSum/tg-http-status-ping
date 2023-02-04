@@ -19,3 +19,9 @@ export const status = {
 export const chatId = {
   type: 'integer'
 }
+
+export const message = {
+  type: 'string',
+  minLength: 1,
+  maxLength: 400
+}

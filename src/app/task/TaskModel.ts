@@ -1,24 +1,41 @@
 import {model, Schema, Types} from 'mongoose'
+import {TaskType} from '@app/task/enums'
 
 
-export interface ITask {
+
+export interface BaseTask {
   _id: Types.ObjectId
+  type: TaskType
   number: number
-  url: string
-  cron: string
-  status: number
   active: boolean
+  cron: string
   chatId: number
   executeAt: number
-  lastStatus: string | number
   createdAt: number
   updatedAt: number
 }
 
 
+export interface IGetHttpTask extends BaseTask {
+  type: TaskType.HTTP_GET
+  url: string
+  status: number
+  lastStatus: number
+}
+
+export interface IMessageTask extends BaseTask {
+  type: TaskType.MESSAGE
+  message: string
+}
+
+export type ITask = IGetHttpTask | IMessageTask
+
+
 const TaskSchema = new Schema(
   {
     number: Number,
+    type: String,
+    message: String,
     url: String,
     cron: String,
     status: Number,

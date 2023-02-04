@@ -3,6 +3,7 @@ import {Context} from 'telegraf'
 import {TaskService} from '@app/task/TaskService'
 import {TelegramController} from '@server/telegram/TelegramController'
 import {ApplicationError} from '@error'
+import retryTimes = jest.retryTimes
 
 
 export class TaskTelegramController extends TelegramController {
@@ -13,30 +14,42 @@ export class TaskTelegramController extends TelegramController {
     super()
     this.telegram.bot.command('schedule', (ctx) => this.schedule(ctx))
     this.telegram.bot.command('status', (ctx) => this.status(ctx))
+    this.telegram.bot.command('schedule_message', (ctx) => this.scheduleMessage(ctx))
     this.telegram.registerCallbackHandler<[number]>({
       event: 'stop',
       handler: this.stop.bind(this)
     })
   }
 
-  async schedule(ctx: Context): Promise<void> {
+  private async _getReplyMessageText(ctx: Context, replyMessage: string): Promise<string | null> {
     if (
       !('message' in ctx.update)
       || !('reply_to_message' in ctx.update.message)
       || !ctx.update.message.reply_to_message
     ) {
       await ctx.reply(
-        'Нужно ответить на сообщение с параметрами: url status cron\n ```text\nhttps://google.com 200 * * * * *```',
+        replyMessage,
         {parse_mode: 'Markdown'}
       )
+      return null
+    }
+    return (ctx.update.message.reply_to_message as {text: string}).text
+  }
+
+  async schedule(ctx: Context): Promise<void> {
+    const replyMessage = await this._getReplyMessageText(
+      ctx,
+      'Нужно ответить на сообщение с параметрами: url status cron\n ```text\nhttps://google.com 200 * * * * *```',
+    )
+    if (replyMessage == null) {
       return
     }
-    const [url, status, ...cron] = (ctx.update.message.reply_to_message as {text: string}).text.split(' ')
+    const [url, status, ...cron] = replyMessage.split(' ')
     const task = await this.service.schedule({
       url: url,
       status: parseInt(status),
       cron: cron.join(' '),
-      chatId: ctx.update.message.chat.id
+      chatId: (ctx.update as {message: {chat: {id: number}}}).message.chat.id
     })
     await ctx.reply(`Задача запланирована №${task.number}`)
   }
@@ -69,5 +82,22 @@ export class TaskTelegramController extends TelegramController {
       }
     }
     await ctx.answerCbQuery()
+  }
+
+  async scheduleMessage(ctx: Context) {
+    const replyMessage = await this._getReplyMessageText(
+      ctx,
+      'Нужно ответить на сообщение которое необходимо отправлять',
+    )
+    if (replyMessage == null) {
+      return
+    }
+    const [, ...cron] = (ctx.update as {message: {text: string}}).message.text.split(' ')
+    const task = await this.service.scheduleMessage({
+      cron: cron.join(' '),
+      message: replyMessage,
+      chatId: (ctx.update as {message: {chat: {id: number}}}).message.chat.id
+    })
+    await ctx.reply(`Задача запланирована №${task.number}`)
   }
 }

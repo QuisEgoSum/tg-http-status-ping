@@ -1,4 +1,5 @@
-import {ITask, TaskModel} from '@app/task/TaskModel'
+import {IGetHttpTask, IMessageTask, ITask, TaskModel} from '@app/task/TaskModel'
+import {TaskType} from '@app/task/enums'
 
 
 export class TaskRepository {
@@ -7,31 +8,32 @@ export class TaskRepository {
   ) {}
 
 
-  async create(
+  async createGetHttpTask(
     number: number,
     url: string,
     cron: string,
     chatId: number,
     status: number,
     active: boolean = true
-  ): Promise<ITask> {
+  ): Promise<IGetHttpTask> {
     return await new this.Model({
       number,
       url,
       cron,
       chatId,
       status,
-      active
+      active,
+      type: TaskType.HTTP_GET
     })
       .save()
-      .then(doc => doc.toJSON() as ITask)
+      .then(doc => doc.toJSON() as IGetHttpTask)
   }
 
   async findActive(): Promise<ITask[]> {
     return await this.Model.find({active: true}).lean().exec()
   }
 
-  async setExecuteInfo(number: number, executeAt: number, lastStatus: number | string) {
+  async setGetHttpExecuteInfo(number: number, executeAt: number, lastStatus: number | string) {
     await this.Model.updateOne({number: number}, {executeAt, lastStatus})
   }
 
@@ -53,6 +55,28 @@ export class TaskRepository {
 
   async countActiveTasks() {
     return await this.Model.countDocuments({active: true}).exec()
+  }
+
+  async createMessageTask(
+    number: number,
+    message: string,
+    cron: string,
+    chatId: number
+  ): Promise<IMessageTask> {
+    return await new this.Model({
+      number,
+      message,
+      cron,
+      chatId,
+      active: true,
+      type: TaskType.MESSAGE
+    })
+      .save()
+      .then(doc => doc.toJSON() as IMessageTask)
+  }
+
+  async setMessageExecuteInfo(number: number, executeAt: number) {
+    return this.Model.updateOne({number}, {executeAt})
   }
 }
 

@@ -1,4 +1,4 @@
-import {ScheduleTask} from '@app/task/schemas/entities'
+import {ScheduleMessageTask, ScheduleTask} from '@app/task/schemas/entities'
 import {TaskValidator} from '@app/task/TaskValidator'
 import {Service} from '@core/service/Service'
 import {CounterService} from '@app/task/counter/CounterService'
@@ -8,6 +8,8 @@ import {logger as defaultLogger} from '@logger'
 import {ApplicationError} from '@error'
 import {Telegram} from '@server/telegram/Telegram'
 import {config} from '@config'
+import {IGetHttpTask, IMessageTask} from '@app/task/TaskModel'
+import {TaskType} from '@app/task/enums'
 
 
 export class TaskService extends Service {
@@ -44,13 +46,17 @@ export class TaskService extends Service {
     }
   }
 
-  async schedule(task: ScheduleTask) {
-    const total = await this.repository.countActiveChatTasks(task.chatId)
+  private async checkMaxActiveTasks(chatId: number) {
+    const total = await this.repository.countActiveChatTasks(chatId)
     if (total >= 10) {
       throw new ApplicationError('Вы не можете иметь более 10 активных задач')
     }
+  }
+
+  async schedule(task: ScheduleTask): Promise<IGetHttpTask> {
+    await this.checkMaxActiveTasks(task.chatId)
     const number = await this.counterService.inc()
-    const savedTask = await this.repository.create(
+    const savedTask = await this.repository.createGetHttpTask(
       number,
       task.url,
       task.cron,
@@ -62,6 +68,21 @@ export class TaskService extends Service {
     return savedTask
   }
 
+  private getHttpTaskStringFormatter(task: IGetHttpTask): string {
+    let message = ''
+    message += `URL: ${task.url}\n`
+    message += `Последнее выполнение: ${task.executeAt ? new Date(task.executeAt).toUTCString() : '-'}\n`
+    message += `Последний статус: ${task.lastStatus || '-'}\n\n`
+    return message
+  }
+
+  private messageTaskStringFormatter(task: IMessageTask): string {
+    let message = ''
+    message += `Сообщение: \n\`${task.message}\``
+    message += `Последнее выполнение: ${task.executeAt ? new Date(task.executeAt).toUTCString() : '-'}\n\n`
+    return message
+  }
+
   async getChatStatus(chatId: number): Promise<{message: string, keyboards: {text: string, callback_data: string}[][]}> {
     const tasks = await this.repository.findActiveChat(chatId)
     let message = tasks.length ? '' : 'У вас нет активных задач'
@@ -71,9 +92,11 @@ export class TaskService extends Service {
 
     for (const task of tasks) {
       message += `*Задача №${task.number}.*\n`
-      message += `URL: ${task.url}\n`
-      message += `Последнее выполнение: ${task.executeAt ? new Date(task.executeAt).toUTCString() : '-'}\n`
-      message += `Последний статус: ${task.lastStatus || '-'}\n\n`
+      if (task.type == TaskType.HTTP_GET) {
+        message += this.getHttpTaskStringFormatter(task)
+      } else if (task.type == TaskType.MESSAGE) {
+        message += this.messageTaskStringFormatter(task)
+      }
       if (rowTasks === 3) {
         row += 1
         rowTasks = 0
@@ -103,5 +126,19 @@ export class TaskService extends Service {
       throw new ApplicationError('Задача уже была удалена')
     }
     this._notifyAdmin(`Остановлена задача №${number}`).then(() => undefined)
+  }
+
+  async scheduleMessage(task: ScheduleMessageTask): Promise<IMessageTask> {
+    await this.checkMaxActiveTasks(task.chatId)
+    const number = await this.counterService.inc()
+    const savedTask = await this.repository.createMessageTask(
+      number,
+      task.message,
+      task.cron,
+      task.chatId
+    )
+    this.scheduler.schedule(savedTask)
+    this._notifyAdmin(`Запланирована задача №${savedTask.number}`).then(() => undefined)
+    return savedTask
   }
 }
