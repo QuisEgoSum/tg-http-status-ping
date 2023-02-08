@@ -3,7 +3,6 @@ import {Context} from 'telegraf'
 import {TaskService} from '@app/task/TaskService'
 import {TelegramController} from '@server/telegram/TelegramController'
 import {ApplicationError} from '@error'
-import retryTimes = jest.retryTimes
 
 
 export class TaskTelegramController extends TelegramController {
