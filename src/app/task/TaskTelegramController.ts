@@ -82,8 +82,7 @@ export class TaskTelegramController extends TelegramController {
         ctx.update.callback_query.message.reply_markup.inline_keyboard
       )
       await this.telegram.bot.telegram.editMessageReplyMarkup(
-        // @ts-ignore
-        ctx.update.callback_query.from.id,
+        chatId,
         // @ts-ignore
         ctx.update.callback_query.message.message_id,
         undefined,
@@ -110,8 +109,7 @@ export class TaskTelegramController extends TelegramController {
         ctx.update.callback_query.message.reply_markup.inline_keyboard
       )
       await this.telegram.bot.telegram.editMessageReplyMarkup(
-        // @ts-ignore
-        ctx.update.callback_query.from.id,
+        chatId,
         // @ts-ignore
         ctx.update.callback_query.message.message_id,
         undefined,
