@@ -20,7 +20,7 @@ export class TaskRepository {
       number,
       url,
       cron,
-      chatId,
+      chatIds: [chatId],
       status,
       active,
       type: TaskType.HTTP_GET
@@ -38,16 +38,16 @@ export class TaskRepository {
   }
 
   async countActiveChatTasks(chatId: number): Promise<number> {
-    return await this.Model.countDocuments({chatId: chatId, active: true}).exec()
+    return await this.Model.countDocuments({chatIds: chatId, active: true}).exec()
   }
 
   async findActiveChat(chatId: number) {
-    return await this.Model.find({active: true, chatId: chatId}).lean().exec()
+    return await this.Model.find({active: true, chatIds: chatId}).lean().exec()
   }
 
   async disable(chatId: number, number: number) {
     return await this.Model.findOneAndUpdate(
-      {chatId, number},
+      {chatIds: chatId, number},
       {active: false},
       {new: false}
     ).lean().exec()
@@ -67,7 +67,7 @@ export class TaskRepository {
       number,
       message,
       cron,
-      chatId,
+      chatIds: [chatId],
       active: true,
       type: TaskType.MESSAGE
     })
@@ -81,7 +81,7 @@ export class TaskRepository {
 
   async enable(chatId: number, number: number) {
     return await this.Model.findOneAndUpdate(
-      {chatId, number},
+      {chatIds: chatId, number},
       {active: true},
       {new: false}
     ).lean().exec()

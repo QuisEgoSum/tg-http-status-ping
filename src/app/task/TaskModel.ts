@@ -9,7 +9,7 @@ export interface BaseTask {
   number: number
   active: boolean
   cron: string
-  chatId: number
+  chatIds: number[]
   executeAt: number
   createdAt: number
   updatedAt: number
@@ -40,7 +40,7 @@ const TaskSchema = new Schema(
     cron: String,
     status: Number,
     active: Boolean,
-    chatId: Number,
+    chatIds: [Number],
     executeAt: Number,
     lastStatus: Schema.Types.Mixed,
     createdAt: Number,

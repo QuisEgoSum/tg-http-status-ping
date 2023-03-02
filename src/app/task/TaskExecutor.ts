@@ -15,18 +15,21 @@ export class TaskExecutor {
   ) {}
 
   private async sendTaskResult(task: ITask, message: string) {
-    await this.telegram.sendMessage(
-      task.chatId,
-      message,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: {
-          inline_keyboard: [
-            [{text: 'Отменить задачу', callback_data: JSON.stringify(['stop', task.number])}]
-          ]
+    for (const chatId of task.chatIds) {
+
+      await this.telegram.sendMessage(
+        chatId,
+        message,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{text: 'Отменить задачу', callback_data: JSON.stringify(['stop', task.number])}]
+            ]
+          }
         }
-      }
-    )
+      )
+    }
   }
 
   private async executeGetUrl(task: IGetHttpTask) {
