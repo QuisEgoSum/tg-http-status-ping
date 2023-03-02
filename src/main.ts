@@ -4,7 +4,7 @@ import {config} from '@config'
 import mongoose from 'mongoose'
 import type {NotificationService} from '@app/notification'
 import {Telegram} from '@server/telegram/Telegram'
-import {logger} from "@logger"
+import {logger} from '@logger'
 
 
 (async function main() {

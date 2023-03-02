@@ -3,7 +3,6 @@ import {Context} from 'telegraf'
 import {TaskService} from '@app/task/TaskService'
 import {TelegramController} from '@server/telegram/TelegramController'
 import {ApplicationError} from '@error'
-import retryTimes = jest.retryTimes
 
 
 export class TaskTelegramController extends TelegramController {
@@ -83,8 +82,7 @@ export class TaskTelegramController extends TelegramController {
         ctx.update.callback_query.message.reply_markup.inline_keyboard
       )
       await this.telegram.bot.telegram.editMessageReplyMarkup(
-        // @ts-ignore
-        ctx.update.callback_query.from.id,
+        chatId,
         // @ts-ignore
         ctx.update.callback_query.message.message_id,
         undefined,
@@ -111,8 +109,7 @@ export class TaskTelegramController extends TelegramController {
         ctx.update.callback_query.message.reply_markup.inline_keyboard
       )
       await this.telegram.bot.telegram.editMessageReplyMarkup(
-        // @ts-ignore
-        ctx.update.callback_query.from.id,
+        chatId,
         // @ts-ignore
         ctx.update.callback_query.message.message_id,
         undefined,
